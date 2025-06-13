@@ -186,7 +186,7 @@ void absVector(float* values, float* output, int N) {
 //  Note: Take a careful look at this loop indexing.  This example
 //  code is not guaranteed to work when (N % VECTOR_WIDTH) != 0.
 //  Why is that the case?
-  for (int i=0; i<N; i+=VECTOR_WIDTH) {
+  for (int i=0; i<N; i+=VECTOR_WIDTH) {  //每次处理四个？
 
     // All ones
     maskAll = _cs149_init_ones();
@@ -249,6 +249,46 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   // Your solution should work for any value of
   // N and VECTOR_WIDTH, not just when VECTOR_WIDTH divides N
   //
+  __cs149_vec_float x;
+  __cs149_vec_int y;
+  __cs149_vec_float result;
+  __cs149_vec_float zero = _cs149_vset_float(0.f);
+  __cs149_vec_float one = _cs149_vset_float(1.f); 
+  __cs149_vec_int zero_int = _cs149_vset_int(0);
+  __cs149_vec_int one_int = _cs149_vset_int(1);
+  __cs149_vec_int count;
+  __cs149_mask maskAll, maskIsNegative, maskIsNotNegative, IsEqual, IsNotEqual;
+
+  for(int i=0; i<N; i+=VECTOR_WIDTH){
+
+    // All ones
+    maskAll = _cs149_init_ones();
+
+    // All zeros
+    IsEqual = _cs149_init_ones(0);
+
+    // x = values[i], y = exponents[i]
+    _cs149_vload_float(x, values+i, maskAll);
+    _cs149_vload_int(y, exponents+i, maskAll);
+
+    _cs149_veq_int(IsEqual, zero_int, y, maskAll);  //if(y == 0)
+    _cs149_vadd_float(result, zero, one, IsEqual);  //output[i] = 1.f
+
+    IsNotEqual = _cs149_mask_not(IsEqual); //else
+
+    _cs149_vload_float(result, values+i, IsNotEqual); // result = x
+    _cs149_vsub_int(count, y, one_int, maskAll);  //count = y - 1
+    
+    
+
+    }
+
+
+
+
+
+  }
+
   
 }
 

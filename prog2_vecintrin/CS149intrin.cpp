@@ -43,6 +43,7 @@ __cs149_mask _cs149_mask_and(__cs149_mask &maska, __cs149_mask &maskb) {
 int _cs149_cntbits(__cs149_mask &maska) {
   int count = 0;
   for (int i=0; i<VECTOR_WIDTH; i++) {
+    //计算mask中的正数
     if (maska.value[i]) count++;
   }
   CS149Logger.addLog("cntbits", _cs149_init_ones(), VECTOR_WIDTH);
@@ -163,6 +164,7 @@ void _cs149_vmult_int(__cs149_vec_int &vecResult, __cs149_vec_int &veca, __cs149
 template <typename T>
 void _cs149_vdiv(__cs149_vec<T> &vecResult, __cs149_vec<T> &veca, __cs149_vec<T> &vecb, __cs149_mask &mask) {
   for (int i=0; i<VECTOR_WIDTH; i++) {
+    //判断Mask的值是否真，否则返回原来的值
     vecResult.value[i] = mask.value[i] ? (veca.value[i] / vecb.value[i]) : vecResult.value[i];
   }
   CS149Logger.addLog("vdiv", mask, VECTOR_WIDTH);

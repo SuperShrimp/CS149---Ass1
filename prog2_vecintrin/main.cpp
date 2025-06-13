@@ -256,16 +256,14 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   __cs149_vec_float one = _cs149_vset_float(1.f); 
   __cs149_vec_int zero_int = _cs149_vset_int(0);
   __cs149_vec_int one_int = _cs149_vset_int(1);
+  __cs149_vec_float max = _cs149_vset_float(9.999999f);
   __cs149_vec_int count;
-  __cs149_mask maskAll, maskIsNegative, maskIsNotNegative, IsEqual, IsNotEqual;
+  __cs149_mask maskAll, IsZero, IsNotZero, IsEqual, IsNotEqual, IsMax;
 
   for(int i=0; i<N; i+=VECTOR_WIDTH){
 
     // All ones
-    maskAll = _cs149_init_ones();
-
-    // All zeros
-    IsEqual = _cs149_init_ones(0);
+    maskAll = _cs149_init_ones(N - i);
 
     // x = values[i], y = exponents[i]
     _cs149_vload_float(x, values+i, maskAll);
@@ -278,19 +276,28 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
 
     _cs149_vload_float(result, values+i, IsNotEqual); // result = x
     _cs149_vsub_int(count, y, one_int, maskAll);  //count = y - 1
-    
-    
 
+    _cs149_veq_int(IsZero, zero_int, count, maskAll);  // if(count == 0)
+    IsNotZero = _cs149_mask_not(IsZero);  //count number of not zero vectors
+    
+    int num_notzero = _cs149_cntbits(IsNotZero);
+    while(num_notzero){  //mask中仍然有count不等于0
+      _cs149_vmult_float(result, result, x, IsNotZero); //result *=x
+      _cs149_vsub_int(count, count, one_int, IsNotZero); //count--
+      _cs149_veq_int(IsZero, zero_int, count, maskAll);  // if(count == 0)
+      IsNotZero = _cs149_mask_not(IsZero);  //count number of not zero vectors
+      int num_notzero = _cs149_cntbits(IsNotZero);
     }
 
+    _cs149_vgt_float(IsMax, result, max, maskAll);
+    _cs149_vmove_float(result, max, IsMax); //result= 9.999999f
 
-
-
+    _cs149_vload_float(result, output+i, maskAll);
+    }
 
   }
 
   
-}
 
 // returns the sum of all elements in values
 float arraySumSerial(float* values, int N) {

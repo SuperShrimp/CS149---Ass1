@@ -261,7 +261,6 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   __cs149_mask maskAll, IsZero, IsNotZero, IsEqual, IsNotEqual, IsMax;
 
   for(int i=0; i<N; i+=VECTOR_WIDTH){
-
     // All ones
     maskAll = _cs149_init_ones(N - i);
 
@@ -269,30 +268,41 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
     _cs149_vload_float(x, values+i, maskAll);
     _cs149_vload_int(y, exponents+i, maskAll);
 
-    _cs149_veq_int(IsEqual, zero_int, y, maskAll);  //if(y == 0)
-    _cs149_vadd_float(result, zero, one, IsEqual);  //output[i] = 1.f
+    _cs149_veq_int(IsEqual,y, zero_int ,maskAll);  //if(y == 0)
+   _cs149_vmove_float(result, one, IsEqual);     //output[i] = 1.f
 
     IsNotEqual = _cs149_mask_not(IsEqual); //else
 
-    _cs149_vload_float(result, values+i, IsNotEqual); // result = x
+    _cs149_vmove_float(result, x, IsNotEqual); // result = x
     _cs149_vsub_int(count, y, one_int, maskAll);  //count = y - 1
 
-    _cs149_veq_int(IsZero, zero_int, count, maskAll);  // if(count == 0)
-    IsNotZero = _cs149_mask_not(IsZero);  //count number of not zero vectors
+    // _cs149_veq_int(IsZero, zero_int, count, maskAll);  // if(count == 0)
+    // IsNotZero = _cs149_mask_not(IsZero);  //count number of not zero vectors
+
+    _cs149_vgt_int(IsNotZero, count, zero_int, maskAll); //count > 0?
     
-    int num_notzero = _cs149_cntbits(IsNotZero);
-    while(num_notzero){  //mask中仍然有count不等于0
+    // int num_notzero = _cs149_cntbits(IsNotZero);
+    // printf("num_notzero: %d", num_notzero);
+    // while(num_notzero){  //mask中仍然有count不等于0
+    //   _cs149_vmult_float(result, result, x, IsNotZero); //result *=x
+    //   _cs149_vsub_int(count, count, one_int, IsNotZero); //count--
+    //   _cs149_veq_int(IsZero, zero_int, count, maskAll);  // if(count == 0)
+    //   IsNotZero = _cs149_mask_not(IsZero);  //count number of not zero vectors
+    //   num_notzero = _cs149_cntbits(IsNotZero);
+      
+    // }
+
+    while(_cs149_cntbits(IsNotZero)){
       _cs149_vmult_float(result, result, x, IsNotZero); //result *=x
       _cs149_vsub_int(count, count, one_int, IsNotZero); //count--
-      _cs149_veq_int(IsZero, zero_int, count, maskAll);  // if(count == 0)
-      IsNotZero = _cs149_mask_not(IsZero);  //count number of not zero vectors
-      int num_notzero = _cs149_cntbits(IsNotZero);
+      _cs149_vgt_int(IsNotZero, count, zero_int, maskAll); // 重新检查count > 0
     }
+
 
     _cs149_vgt_float(IsMax, result, max, maskAll);
     _cs149_vmove_float(result, max, IsMax); //result= 9.999999f
 
-    _cs149_vload_float(result, output+i, maskAll);
+    _cs149_vstore_float(output+i, result, maskAll);
     }
 
   }
@@ -317,9 +327,9 @@ float arraySumVector(float* values, int N) {
   //
   // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
   //
-  
+  float * temp_values;
   for (int i=0; i<N; i+=VECTOR_WIDTH) {
-
+    i%2== 0 ? _cs149_interleave_float(values, values): _cs149_hadd_float()
   }
 
   return 0.0;

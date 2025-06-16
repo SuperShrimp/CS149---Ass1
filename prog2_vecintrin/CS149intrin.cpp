@@ -234,6 +234,9 @@ void _cs149_veq_int(__cs149_mask &maskResult, __cs149_vec_int &veca, __cs149_vec
 
 template <typename T>
 void _cs149_hadd(__cs149_vec<T> &vecResult, __cs149_vec<T> &vec) {
+  /*
+    将voctor与vector旁边的变量相加
+  */
   for (int i=0; i<VECTOR_WIDTH/2; i++) {
     T result = vec.value[2*i] + vec.value[2*i+1];
     vecResult.value[2 * i] = result;
@@ -247,6 +250,10 @@ void _cs149_hadd_float(__cs149_vec_float &vecResult, __cs149_vec_float &vec) { _
 
 template <typename T>
 void _cs149_interleave(__cs149_vec<T> &vecResult, __cs149_vec<T> &vec) {
+  /*
+    计算索引：前半是偶数索引，后半是奇数索引
+    计算新向量：将偶数位置的数排在前面，奇数位排在后面
+  */
   for (int i=0; i<VECTOR_WIDTH; i++) {
     int index = i < VECTOR_WIDTH/2 ? (2 * i) : (2 * (i - VECTOR_WIDTH/2) + 1);
     vecResult.value[i] = vec.value[index];

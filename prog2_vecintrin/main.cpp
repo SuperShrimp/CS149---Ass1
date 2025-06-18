@@ -327,11 +327,33 @@ float arraySumVector(float* values, int N) {
   //
   // CS149 STUDENTS TODO: Implement your vectorized version of arraySumSerial here
   //
-  float * temp_values;
+
+  __cs149_vec_float current_vec;
+  __cs149_mask maskAll;
+  float sum = 0.f;
+  //针对每个向量做规约相加
   for (int i=0; i<N; i+=VECTOR_WIDTH) {
-    i%2== 0 ? _cs149_interleave_float(values, values): _cs149_hadd_float()
+    //初始化mask
+    maskAll = _cs149_init_ones();
+    //获取当前vec
+    _cs149_vload_float(current_vec, values+i, maskAll);
+    //在向量内部求和
+    int rounds = 0;
+    int width = VECTOR_WIDTH;
+    while(width>1)
+    {
+      rounds++;
+      width/=2;
+    }
+
+    for(int j = 0; j < rounds; j++)
+    {
+      _cs149_hadd_float(current_vec, current_vec);
+      _cs149_interleave_float(current_vec, current_vec);
+    }
+    sum += current_vec.value[0];
   }
 
-  return 0.0;
+  return sum;
 }
 
